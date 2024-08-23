@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"fmt"
 	"go-interpreter/ast"
 	"go-interpreter/object"
 )
@@ -22,6 +23,10 @@ func Eval(node ast.Node) object.Object {
 		return evalBlockStatement(node)
 	case *ast.ReturnStatement:
 		returnValue := Eval(node.ReturnValue)
+
+		if isError(returnValue) {
+			return returnValue
+		}
 		return &object.ReturnValue{Value: returnValue}
 
 		// Expressions
@@ -34,11 +39,22 @@ func Eval(node ast.Node) object.Object {
 
 	case *ast.PrefixExpression:
 		right := Eval(node.Right)
+
+		if isError(right) {
+			return right
+		}
 		return evalPrefixExpression(node.Operator, right)
 
 	case *ast.InfixExpression:
 		left := Eval(node.Left)
+		if isError(left) {
+			return left
+		}
+
 		right := Eval(node.Right)
+		if isError(right) {
+			return right
+		}
 		return evalInfixExpression(node.Operator, left, right)
 	}
 
@@ -51,12 +67,19 @@ func evalProgram(statements []ast.Statement) object.Object {
 	for _, statement := range statements {
 		result = Eval(statement)
 
-		if returnValue, ok := result.(*object.ReturnValue); ok {
-			return returnValue.Value
+		switch result := result.(type) {
+		case *object.ReturnValue:
+			return result.Value
+		case *object.Error:
+			return result
 		}
 	}
 
 	return result
+}
+
+func newError(format string, a ...interface{}) *object.Error {
+	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
@@ -73,7 +96,9 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusPrefixExpression(right)
 	default:
-		return NULL
+		return newError(
+			"unknown operator: %s%s", operator, right.Type(),
+		)
 	}
 }
 
@@ -97,7 +122,7 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 
 func evalMinusPrefixExpression(right object.Object) object.Object {
 	if right.Type() != object.INTEGER_OBJ {
-		return NULL
+		return newError("unknown operator: -%s", right.Type())
 	}
 	value := right.(*object.Integer).Value
 	return &object.Integer{Value: -value}
@@ -111,8 +136,12 @@ func evalInfixExpression(operator string, left object.Object, right object.Objec
 		return nativeBoolToBooleanObject(left == right)
 	case operator == "!=":
 		return nativeBoolToBooleanObject(left != right)
+	case left.Type() != right.Type():
+		return newError("type mismatch: %s %s %s",
+			left.Type(), operator, right.Type())
 	default:
-		return NULL
+		return newError("unknown operator: %s %s %s",
+			left.Type(), operator, right.Type())
 	}
 }
 
@@ -138,12 +167,17 @@ func evalIntegerInfixExpression(operator string, left object.Object, right objec
 	case "!=":
 		return nativeBoolToBooleanObject(leftVal != rightVal)
 	default:
-		return NULL
+		return newError("unknown operator: %s %s %s",
+			left.Type(), operator, right.Type())
 	}
 }
 
 func evalIfExpression(node *ast.IfExpression) object.Object {
 	condition := Eval(node.Condition)
+
+	if isError(condition) {
+		return condition
+	}
 
 	if isTruthy(condition) {
 		return Eval(node.Consequence)
@@ -174,10 +208,20 @@ func evalBlockStatement(block *ast.BlockStatement) object.Object {
 	for _, statement := range block.Statements {
 		result = Eval(statement)
 
-		if result != nil && result.Type() == object.RETURN_VALUE_OBJ {
-			return result
+		if result != nil {
+			resultType := result.Type()
+			if resultType == object.ERROR_OBJ || resultType == object.RETURN_VALUE_OBJ {
+				return result
+			}
 		}
 	}
 
 	return result
+}
+
+func isError(obj object.Object) bool {
+	if obj != nil {
+		return obj.Type() == object.ERROR_OBJ
+	}
+	return false
 }
