@@ -16,3 +16,8 @@ let greet = fn(name) {
 }
 
 greet(name)
+
+if (len(name) > 2) {
+  return "OK"
+}
+
