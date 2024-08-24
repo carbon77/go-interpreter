@@ -8,3 +8,11 @@ let newAdder = fn(x) {
 
 let addThree = newAdder(3);
 addThree(4);
+
+let name = "Igor"
+let greet = fn(name) {
+  let greeting = "Hello ";
+  return greeting + name + "!";
+}
+
+greet(name)
