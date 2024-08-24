@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	if *file != "" {
-		evalFile(*file, os.Stdout)
+		EvalFile(*file, os.Stdout)
 		return
 	}
 
@@ -36,7 +36,7 @@ func main() {
 	repl.Start(os.Stdin, os.Stdout)
 }
 
-func evalFile(filename string, out io.Writer) {
+func EvalFile(filename string, out io.Writer) {
 	file, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)

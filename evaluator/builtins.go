@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"fmt"
 	"go-interpreter/object"
 	"os"
 )
@@ -55,6 +56,14 @@ var (
 				}
 
 				os.Exit(0)
+				return NULL
+			},
+		},
+		"println": {
+			Function: func(args ...object.Object) object.Object {
+				for _, arg := range args {
+					fmt.Println(arg.Inspect())
+				}
 				return NULL
 			},
 		},
