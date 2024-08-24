@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"go-interpreter/ast"
 	"strings"
-
-	"google.golang.org/genproto/googleapis/cloud/aiplatform/v1/schema/predict/params"
 )
 
 type ObjectType string
