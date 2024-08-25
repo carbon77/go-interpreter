@@ -365,7 +365,7 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	max := int64(len(arrayObj.Elements) - 1)
 
 	if idx < 0 || idx > max {
-		return NULL
+		return newError("array index out of range")
 	}
 	return arrayObj.Elements[idx]
 }
@@ -408,7 +408,7 @@ func evalHashIndexExpression(hash, index object.Object) object.Object {
 
 	pair, ok := hashObject.Pairs[key.HashKey()]
 	if !ok {
-		return NULL
+		return newError("key not found: %s", key.(object.Object).Inspect())
 	}
 	return pair.Value
 }
@@ -426,7 +426,54 @@ func evalAssignExpression(node *ast.AssignExpression, env *object.Environment) o
 		}
 		env.Set(name.Value, val)
 		return NULL
+	case *ast.IndexExpression:
+		return evalIndexAssignExpression(name, node.Value, env)
 	default:
 		return newError("left operand of assign statement must be identifier")
+	}
+}
+
+func evalIndexAssignExpression(indexExp *ast.IndexExpression, value ast.Expression, env *object.Environment) object.Object {
+	left := Eval(indexExp.Left, env)
+	if isError(left) {
+		return left
+	}
+
+	index := Eval(indexExp.Index, env)
+	if isError(index) {
+		return index
+	}
+
+	switch {
+	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
+		arr := left.(*object.Array)
+		indexVal := index.(*object.Integer).Value
+		if indexVal < 0 || indexVal >= int64(len(arr.Elements)) {
+			return newError("list index out of range")
+		}
+
+		evaluatedVal := Eval(value, env)
+		if isError(evaluatedVal) {
+			return evaluatedVal
+		}
+
+		arr.Elements[indexVal] = evaluatedVal
+		return NULL
+	case left.Type() == object.HASH_OBJ:
+		hashTable := left.(*object.Hash)
+		key, ok := index.(object.Hashable)
+		if !ok {
+			return newError("unusable as hash key: %s", index.Type())
+		}
+
+		evaluatedVal := Eval(value, env)
+		if isError(evaluatedVal) {
+			return evaluatedVal
+		}
+
+		hashTable.Pairs[key.HashKey()] = object.HashPair{Key: key.(object.Object), Value: evaluatedVal}
+		return NULL
+	default:
+		return newError("index operator not supported %s", left.Type())
 	}
 }

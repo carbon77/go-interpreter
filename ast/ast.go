@@ -199,13 +199,13 @@ func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
 func (bs *BlockStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("{")
-
-	for _, stmt := range bs.Statements {
+	for i, stmt := range bs.Statements {
 		out.WriteString(stmt.String())
+		if i != len(bs.Statements)-1 {
+			out.WriteString("\n")
+		}
 	}
 
-	out.WriteString("}")
 	return out.String()
 }
 

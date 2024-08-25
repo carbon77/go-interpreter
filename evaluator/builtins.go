@@ -59,7 +59,7 @@ var (
 				return NULL
 			},
 		},
-		"println": {
+		"print": {
 			Function: func(args ...object.Object) object.Object {
 				for _, arg := range args {
 					fmt.Println(arg.Inspect())

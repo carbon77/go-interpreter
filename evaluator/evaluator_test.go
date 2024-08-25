@@ -203,6 +203,18 @@ return 1;
 			"4 = 1",
 			"left operand of assign statement must be identifier",
 		},
+		{
+			`let x = {"foo": 3}; x["123"];`,
+			`key not found: 123`,
+		},
+		{
+			`[1, 2, 3][-1]`,
+			"array index out of range",
+		},
+		{
+			"[][0]",
+			"array index out of range",
+		},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -242,6 +254,8 @@ func TestAssignStatements(t *testing.T) {
 	}{
 		{"let x = 3; x = 1; x;", 1},
 		{"let x = 3; let y = 3; x = x + y; x;", 6},
+		{"let arr = [1, 2]; arr[0] = 3; arr[0]", 3},
+		{`let h = {"foo": 3}; h["foo"] = 1; h["foo"]`, 1},
 	}
 
 	for _, tt := range tests {
@@ -384,28 +398,12 @@ func TestArrayIndexExpressions(t *testing.T) {
 			2,
 		},
 		{
-			"[1, 2, 3][3]",
-			nil,
-		},
-		{
-			"[1, 2, 3][-1]",
-			nil,
-		},
-		{
 			`{"foo": 5}["foo"]`,
 			5,
 		},
 		{
-			`{"foo": 5}["bar"]`,
-			nil,
-		},
-		{
 			`let key = "foo"; {"foo": 5}[key]`,
 			5,
-		},
-		{
-			`{}["foo"]`,
-			nil,
 		},
 		{
 			`{true: 5}[true]`,
