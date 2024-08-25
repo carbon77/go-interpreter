@@ -24,6 +24,9 @@ let forEach = fn(arr, f) {
 let arrays = [[1, 2, 3], [3, 4], [1, 2], [1], []]
 let lens = map(arrays, fn(arr) { len(arr) })
 
+println("Arrays: ", arrays)
+println("Lengths of arrays: ", lens)
+println("Squared: ", map(lens, fn(x) { return x * x; }))
 forEach(lens, fn(i, arrLen) {
   println(arrLen)
 })

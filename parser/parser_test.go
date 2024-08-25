@@ -433,6 +433,45 @@ func TestParsingEmptyHashLiteral(t *testing.T) {
 	}
 }
 
+func TestParsingAssignStatements(t *testing.T) {
+	tests := []struct {
+		input string
+		left  string
+		right string
+	}{
+		{"x = 3 + 4", "x", "(3 + 4)"},
+		{"y = add(x) * (1 + 2)", "y", "(add(x) * (1 + 2))"},
+		{"arr[x + 3] = true", "(arr[(x + 3)])", "true"},
+	}
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+
+		if len(program.Statements) != 1 {
+			t.Fatalf("program.Statements does not have %d statements. got=%d", 1, len(program.Statements))
+		}
+
+		stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+		if !ok {
+			t.Fatalf("program.Statement[0] is not ExpressionStatement. got=%T", program.Statements[0])
+		}
+
+		assignExpression, ok := stmt.Expression.(*ast.AssignExpression)
+		if !ok {
+			t.Fatalf("stmt.Expression is not AssignExpression. got=%T", stmt.Expression)
+		}
+
+		if assignExpression.Name.String() != tt.left {
+			t.Errorf("assignExpression.Name is not '%s'. got=%s", tt.left, assignExpression.Name.String())
+		}
+
+		if assignExpression.Value.String() != tt.right {
+			t.Errorf("assignExpression.Value is not '%s'. got=%s", tt.right, assignExpression.Value.String())
+		}
+	}
+}
+
 func TestIfExpression(t *testing.T) {
 	input := "if (x < y) { x }"
 

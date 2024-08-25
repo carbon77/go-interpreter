@@ -195,6 +195,14 @@ return 1;
 			`{"name": "Monkey"}[fn(x) { x }];`,
 			"unusable as hash key: FUNCTION",
 		},
+		{
+			"x = 3",
+			"identifier not found: x",
+		},
+		{
+			"4 = 1",
+			"left operand of assign statement must be identifier",
+		},
 	}
 	for _, tt := range tests {
 		evaluated := testEval(tt.input)
@@ -224,6 +232,33 @@ func TestLetStatements(t *testing.T) {
 
 	for _, tt := range tests {
 		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
+func TestAssignStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let x = 3; x = 1; x;", 1},
+		{"let x = 3; let y = 3; x = x + y; x;", 6},
+	}
+
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := parser.New(l)
+		program := p.ParseProgram()
+		env := object.NewEnvironment()
+		evaluated := Eval(program, env)
+
+		intVal, ok := evaluated.(*object.Integer)
+		if !ok {
+			t.Fatalf("evaluated is not object.Integer. got=%T", evaluated)
+		}
+
+		if tt.expected != intVal.Value {
+			t.Errorf("evaluated not equals %d. got=%d", tt.expected, intVal.Value)
+		}
 	}
 }
 
