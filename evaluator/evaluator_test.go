@@ -290,7 +290,7 @@ func TestFunctionObject(t *testing.T) {
 	if fn.Parameters[0].String() != "x" {
 		t.Fatalf("parameter is not 'x'. got=%q", fn.Parameters[0])
 	}
-	expectedBody := "{(x + 2)}"
+	expectedBody := "(x + 2)"
 	if fn.Body.String() != expectedBody {
 		t.Fatalf("body is not %q. got=%q", expectedBody, fn.Body.String())
 	}
@@ -457,6 +457,33 @@ false: 6
 			t.Errorf("no pair for given key in Pairs")
 		}
 		testIntegerObject(t, pair.Value, expectedValue)
+	}
+}
+
+func TestForStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected interface{}
+	}{
+		{`
+		let i = 0;
+		let x = 0;
+		for (i < 10) {
+			x = x + 2;
+			i = i + 1;
+		}
+		x;
+		`, 20},
+	}
+
+	for _, tt := range tests {
+		evaluated := testEval(tt.input)
+		integer, ok := tt.expected.(int)
+		if ok {
+			testIntegerObject(t, evaluated, int64(integer))
+		} else {
+			testNullObject(t, evaluated)
+		}
 	}
 }
 

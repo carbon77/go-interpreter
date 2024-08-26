@@ -1,32 +1,39 @@
 let map = fn(arr, mapper) {
   let newArr = []
-  let wrapped = fn(wrappedArr, i) {
-    if (i == len(arr)) {
-      return wrappedArr; 
-    }
-    let wrappedArr = push(wrappedArr, mapper(arr[i]));
-    return wrapped(wrappedArr, i + 1);
+  let i = 0
+
+  for (i < len(arr)) {
+    newArr = push(newArr, mapper(i, arr[i]));
+    i = i + 1;
   }
-  return wrapped(newArr, 0);
+
+  return newArr
 }
 
-let forEach = fn(arr, f) {
-  let wrapped = fn(i) {
-    if (i == len(arr)) {
-      return 0; 
-    }
-    f(i, arr[i])
-    wrapped(i + 1)
+let filter = fn(arr, condition) {
+  let newArr = []
+  let i = 0
+
+  for (i < len(arr)) {
+    if (condition(arr[i])) {
+      newArr = push(newArr, arr[i]);
+    } 
+    i = i + 1;
   }
-  wrapped(0);
+
+  return newArr;
 }
 
-let arrays = [[1, 2, 3], [3, 4], [1, 2], [1], []]
-let lens = map(arrays, fn(arr) { len(arr) })
+let arrays = [
+  [1, 2, 3], 
+  [3, 4], 
+  [1, 2], 
+  [1], 
+  [],
+  [3, 4, 5]
+]
+let lens = map(arrays, fn(idx, arr) { len(arr) })
 
-println("Arrays: ", arrays)
-println("Lengths of arrays: ", lens)
-println("Squared: ", map(lens, fn(x) { return x * x; }))
-forEach(lens, fn(i, arrLen) {
-  println(arrLen)
-})
+print("Arrays: ", arrays)
+print("Lengths of arrays: ", lens)
+print("Filtered: ", filter(lens, fn(l) { l > 2 }))

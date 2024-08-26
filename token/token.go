@@ -41,17 +41,23 @@ const (
 	IF       = "IF"
 	ELSE     = "ELSE"
 	RETURN   = "RETURN"
+	FOR      = "FOR"
+	BREAK    = "BREAK"
+	CONTINUE = "CONTINUE"
 )
 
 var (
 	keywords = map[string]TokenType{
-		"fn":     FUNCTION,
-		"let":    LET,
-		"true":   TRUE,
-		"false":  FALSE,
-		"if":     IF,
-		"else":   ELSE,
-		"return": RETURN,
+		"fn":       FUNCTION,
+		"let":      LET,
+		"true":     TRUE,
+		"false":    FALSE,
+		"if":       IF,
+		"else":     ELSE,
+		"return":   RETURN,
+		"for":      FOR,
+		"break":    BREAK,
+		"continue": CONTINUE,
 	}
 )
 

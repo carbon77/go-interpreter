@@ -28,7 +28,11 @@ if (5 < 10) {
 "foobar"
 "foo bar"
 [1, 2];
-{"foo": "bar"}`
+{"foo": "bar"}
+for (i < 3) {
+	break;
+	continue;
+}`
 
 	tests := []struct {
 		expectedType    token.TokenType
@@ -119,6 +123,18 @@ if (5 < 10) {
 		{token.STRING, "foo"},
 		{token.COLON, ":"},
 		{token.STRING, "bar"},
+		{token.RBRACE, "}"},
+		{token.FOR, "for"},
+		{token.LPAREN, "("},
+		{token.IDENT, "i"},
+		{token.LT, "<"},
+		{token.INT, "3"},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.BREAK, "break"},
+		{token.SEMICOLON, ";"},
+		{token.CONTINUE, "continue"},
+		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 		{token.EOF, ""},
 	}

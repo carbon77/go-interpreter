@@ -39,6 +39,9 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	case *ast.AssignExpression:
 		return evalAssignExpression(node, env)
 
+	case *ast.ForStatement:
+		return evalForStatement(node, env)
+
 		// Expressions
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -476,4 +479,23 @@ func evalIndexAssignExpression(indexExp *ast.IndexExpression, value ast.Expressi
 	default:
 		return newError("index operator not supported %s", left.Type())
 	}
+}
+
+func evalForStatement(forStmt *ast.ForStatement, env *object.Environment) object.Object {
+	var result object.Object
+	var conditionVal = Eval(forStmt.Condition, env)
+
+	for isTruthy(conditionVal) {
+		result = Eval(&forStmt.Body, env)
+
+		if result != nil {
+			if result.Type() == object.ERROR_OBJ || result.Type() == object.RETURN_VALUE_OBJ {
+				return result
+			}
+		}
+
+		conditionVal = Eval(forStmt.Condition, env)
+	}
+
+	return result
 }

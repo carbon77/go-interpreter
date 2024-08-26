@@ -285,11 +285,11 @@ func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 		Function: function,
 	}
 
-	exp.Arguments = p.parseExpressionList(token.RPAREN)
+	exp.Arguments = p.parseExpressionList(token.COMMA, token.RPAREN)
 	return exp
 }
 
-func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {
+func (p *Parser) parseExpressionList(delimeter, end token.TokenType) []ast.Expression {
 	args := []ast.Expression{}
 
 	if p.peekTokenIs(end) {
@@ -300,7 +300,7 @@ func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {
 	p.nextToken()
 	args = append(args, p.parseExpression(LOWEST))
 
-	for p.peekTokenIs(token.COMMA) {
+	for p.peekTokenIs(delimeter) {
 		p.nextToken()
 		p.nextToken()
 		args = append(args, p.parseExpression(LOWEST))
@@ -338,6 +338,16 @@ func (p *Parser) parseStatement() ast.Statement {
 		return p.parseLetStatement()
 	case token.RETURN:
 		return p.parseReturnStatement()
+	case token.BREAK:
+		stmt := &ast.BreakStatement{Token: p.curToken}
+		p.nextToken()
+		return stmt
+	case token.CONTINUE:
+		stmt := &ast.ContinueStatement{Token: p.curToken}
+		p.nextToken()
+		return stmt
+	case token.FOR:
+		return p.parseForStatement()
 	default:
 		return p.parseExpressionStatement()
 	}
@@ -446,7 +456,7 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 		Token: p.curToken,
 	}
 
-	array.Elements = p.parseExpressionList(token.RBRACKET)
+	array.Elements = p.parseExpressionList(token.COMMA, token.RBRACKET)
 
 	return array
 }
@@ -506,4 +516,24 @@ func (p *Parser) parseAssignExpression(left ast.Expression) ast.Expression {
 	p.nextToken()
 	exp.Value = p.parseExpression(LOWEST)
 	return exp
+}
+
+func (p *Parser) parseForStatement() ast.Statement {
+	stmt := &ast.ForStatement{Token: p.curToken}
+
+	if p.expectPeek(token.LPAREN) {
+		expressions := p.parseExpressionList(token.SEMICOLON, token.RPAREN)
+
+		if len(expressions) != 1 {
+			return nil
+		}
+		stmt.Condition = expressions[0]
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	stmt.Body = *p.parseBlockStatement()
+	return stmt
 }

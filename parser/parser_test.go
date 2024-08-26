@@ -472,6 +472,52 @@ func TestParsingAssignStatements(t *testing.T) {
 	}
 }
 
+func TestForOnlyConditionStatement(t *testing.T) {
+	input := "for (i < 3) { i }"
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program.Body does not contain %d statements. got=%d\n", 1, len(program.Statements))
+	}
+
+	stmt, ok := program.Statements[0].(*ast.ForStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ForStatement. got=%T", program.Statements[0])
+	}
+
+	if stmt.Init != nil {
+		t.Errorf("stmt.Init is not nil")
+	}
+
+	if stmt.After != nil {
+		t.Errorf("stmt.After is not nil")
+	}
+
+	if stmt.Condition == nil {
+		t.Fatalf("stmt.Condition is nil")
+	}
+
+	if !testInfixExpression(t, stmt.Condition, "i", "<", 3) {
+		return
+	}
+
+	if len(stmt.Body.Statements) != 1 {
+		t.Fatalf("stmt.Body does not contain %d statements. got=%d\n", 1, len(stmt.Body.Statements))
+	}
+
+	exp, ok := stmt.Body.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("stmt.Body.Statements[0] is not ast.ExpressionStatement. got=%T\n", stmt.Body.Statements[0])
+	}
+
+	if !testIdentifier(t, exp.Expression, "i") {
+		return
+	}
+}
+
 func TestIfExpression(t *testing.T) {
 	input := "if (x < y) { x }"
 
