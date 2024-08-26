@@ -521,13 +521,28 @@ func (p *Parser) parseAssignExpression(left ast.Expression) ast.Expression {
 func (p *Parser) parseForStatement() ast.Statement {
 	stmt := &ast.ForStatement{Token: p.curToken}
 
-	if p.expectPeek(token.LPAREN) {
-		expressions := p.parseExpressionList(token.SEMICOLON, token.RPAREN)
+	if p.peekTokenIs(token.LPAREN) {
+		p.nextToken()
+		statements := p.parseForStatements()
 
-		if len(expressions) != 1 {
+		if !checkForHeader(statements) {
 			return nil
 		}
-		stmt.Condition = expressions[0]
+
+		if len(statements) != 0 {
+			switch len(statements) {
+			case 1:
+				stmt.Condition = statements[0]
+			case 3:
+				stmt.After = statements[2]
+				fallthrough
+			case 2:
+				stmt.Init = statements[0]
+				stmt.Condition = statements[1]
+			default:
+				return nil
+			}
+		}
 	}
 
 	if !p.expectPeek(token.LBRACE) {
@@ -536,4 +551,64 @@ func (p *Parser) parseForStatement() ast.Statement {
 
 	stmt.Body = *p.parseBlockStatement()
 	return stmt
+}
+
+func (p *Parser) parseForStatements() []ast.Statement {
+	var statements []ast.Statement
+
+	if p.peekTokenIs(token.RPAREN) {
+		p.nextToken()
+		return statements
+	}
+
+	p.nextToken()
+	statements = append(statements, p.parseStatement())
+
+	for p.curTokenIs(token.SEMICOLON) {
+		p.nextToken()
+		stmt := p.parseStatement()
+		if stmt != nil {
+			statements = append(statements, stmt)
+		}
+	}
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+	return statements
+}
+
+func checkForHeader(statements []ast.Statement) bool {
+	if len(statements) > 3 {
+		return false
+	}
+
+	if len(statements) == 0 {
+		return true
+	}
+
+	if len(statements) == 1 {
+		_, ok := statements[0].(*ast.ExpressionStatement)
+		return ok
+	}
+
+	switch statements[0].(type) {
+	case *ast.LetStatement:
+	case *ast.ExpressionStatement:
+		return true
+	default:
+		return false
+	}
+
+	if _, ok := statements[1].(*ast.ExpressionStatement); !ok {
+		return false
+	}
+
+	if len(statements) == 3 {
+		if _, ok := statements[2].(*ast.ExpressionStatement); !ok {
+			return false
+		}
+	}
+
+	return true
 }

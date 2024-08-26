@@ -483,7 +483,24 @@ func evalIndexAssignExpression(indexExp *ast.IndexExpression, value ast.Expressi
 
 func evalForStatement(forStmt *ast.ForStatement, env *object.Environment) object.Object {
 	var result object.Object
-	var conditionVal = Eval(forStmt.Condition, env)
+	var conditionVal object.Object
+
+	if forStmt.Init != nil {
+		initResult := Eval(forStmt.Init, env)
+		if isError(initResult) {
+			return initResult
+		}
+	}
+
+	if forStmt.Condition == nil {
+		conditionVal = TRUE
+	} else {
+		conditionVal = Eval(forStmt.Condition, env)
+	}
+
+	if isError(conditionVal) {
+		return conditionVal
+	}
 
 	for isTruthy(conditionVal) {
 		result = Eval(&forStmt.Body, env)
@@ -494,7 +511,17 @@ func evalForStatement(forStmt *ast.ForStatement, env *object.Environment) object
 			}
 		}
 
+		if forStmt.After != nil {
+			afterResult := Eval(forStmt.After, env)
+			if isError(afterResult) {
+				return afterResult
+			}
+		}
+
 		conditionVal = Eval(forStmt.Condition, env)
+		if isError(conditionVal) {
+			return conditionVal
+		}
 	}
 
 	return result

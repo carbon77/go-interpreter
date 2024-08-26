@@ -353,9 +353,9 @@ func (ae *AssignExpression) String() string {
 type ForStatement struct {
 	Token     token.Token
 	Body      BlockStatement
-	Init      Expression
-	Condition Expression
-	After     Expression
+	Init      Statement
+	Condition Statement
+	After     Statement
 }
 
 func (fs *ForStatement) statementNode()       {}

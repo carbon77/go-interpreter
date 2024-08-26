@@ -465,7 +465,8 @@ func TestForStatements(t *testing.T) {
 		input    string
 		expected interface{}
 	}{
-		{`
+		{
+			`
 		let i = 0;
 		let x = 0;
 		for (i < 10) {
@@ -473,7 +474,29 @@ func TestForStatements(t *testing.T) {
 			i = i + 1;
 		}
 		x;
-		`, 20},
+		`,
+			20,
+		},
+		{
+			`
+			let x = 0;
+			for (let i = 2; i < 10; i = i + 1) {
+				x = x + 1;
+			}
+			x;`,
+			8,
+		},
+		{
+			`
+			let x = 0;
+			for (let i = 0; i < 10) {
+				x = x + 1;
+				i = i + 1;
+			}
+			x;
+			`,
+			10,
+		},
 	}
 
 	for _, tt := range tests {

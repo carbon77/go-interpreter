@@ -1,10 +1,8 @@
 let map = fn(arr, mapper) {
   let newArr = []
-  let i = 0
 
-  for (i < len(arr)) {
+  for (let i = 0; i < len(arr); i = i + 1) {
     newArr = push(newArr, mapper(i, arr[i]));
-    i = i + 1;
   }
 
   return newArr
@@ -12,13 +10,11 @@ let map = fn(arr, mapper) {
 
 let filter = fn(arr, condition) {
   let newArr = []
-  let i = 0
 
-  for (i < len(arr)) {
+  for (let i = 0; i < len(arr); i = i + 1) {
     if (condition(arr[i])) {
       newArr = push(newArr, arr[i]);
     } 
-    i = i + 1;
   }
 
   return newArr;
