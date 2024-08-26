@@ -497,6 +497,32 @@ func TestForStatements(t *testing.T) {
 			`,
 			10,
 		},
+		{
+			`
+			let x = 0;
+			for {
+				if (x > 5) {
+					break;
+				}
+				x = x + 1;
+			}
+			x;
+			`,
+			6,
+		},
+		{
+			`
+		let x = 0;
+		for (let i = 0; i < 10; i = i + 1) {
+			if (i == 4) {
+				continue;
+			}
+			x = x + 1;
+		} 
+		x;
+		`,
+			9,
+		},
 	}
 
 	for _, tt := range tests {

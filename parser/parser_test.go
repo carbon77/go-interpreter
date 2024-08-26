@@ -588,6 +588,28 @@ func TestForInitConditionStatement(t *testing.T) {
 	}
 }
 
+func TestBreakAndContinue(t *testing.T) {
+	input := `
+	break;
+	continue;
+	`
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+
+	if len(program.Statements) != 2 {
+		t.Fatalf("program.Statements does not contains %d statements. got=%d", 2, len(program.Statements))
+	}
+
+	if _, ok := program.Statements[0].(*ast.BreakStatement); !ok {
+		t.Errorf("program.Statements[0] is not ast.BreakStatement. got=%T\n", program.Statements[0])
+	}
+
+	if _, ok := program.Statements[1].(*ast.ContinueStatement); !ok {
+		t.Errorf("program.Statements[1] is not ast.ContinueStatement. got=%T\n", program.Statements[1])
+	}
+}
+
 func TestIfExpression(t *testing.T) {
 	input := "if (x < y) { x }"
 

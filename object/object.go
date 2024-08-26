@@ -21,6 +21,8 @@ const (
 	BUILTIN_OBJ      = "BUILTIN"
 	ARRAY_OBJ        = "ARRAY"
 	HASH_OBJ         = "HASH"
+	BREAK_OBJ        = "BREAK"
+	CONTINUE_OBJ     = "CONTINUE"
 )
 
 type Object interface {
@@ -173,3 +175,13 @@ func (h *Hash) Inspect() string {
 	out.WriteString("}")
 	return out.String()
 }
+
+type BreakValue struct{}
+
+func (bv *BreakValue) Type() ObjectType { return BREAK_OBJ }
+func (bv *BreakValue) Inspect() string  { return "break;" }
+
+type ContinueValue struct{}
+
+func (cb *ContinueValue) Type() ObjectType { return CONTINUE_OBJ }
+func (cb *ContinueValue) Inspect() string  { return "continue;" }

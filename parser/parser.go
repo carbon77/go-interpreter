@@ -593,9 +593,8 @@ func checkForHeader(statements []ast.Statement) bool {
 	}
 
 	switch statements[0].(type) {
-	case *ast.LetStatement:
-	case *ast.ExpressionStatement:
-		return true
+	case *ast.LetStatement, *ast.ExpressionStatement:
+
 	default:
 		return false
 	}

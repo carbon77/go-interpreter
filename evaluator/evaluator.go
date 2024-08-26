@@ -41,6 +41,10 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 
 	case *ast.ForStatement:
 		return evalForStatement(node, env)
+	case *ast.BreakStatement:
+		return &object.BreakValue{}
+	case *ast.ContinueStatement:
+		return &object.ContinueValue{}
 
 		// Expressions
 	case *ast.IntegerLiteral:
@@ -268,7 +272,8 @@ func evalBlockStatement(block *ast.BlockStatement, env *object.Environment) obje
 
 		if result != nil {
 			resultType := result.Type()
-			if resultType == object.ERROR_OBJ || resultType == object.RETURN_VALUE_OBJ {
+			switch resultType {
+			case object.ERROR_OBJ, object.RETURN_VALUE_OBJ, object.BREAK_OBJ, object.CONTINUE_OBJ:
 				return result
 			}
 		}
@@ -506,7 +511,8 @@ func evalForStatement(forStmt *ast.ForStatement, env *object.Environment) object
 		result = Eval(&forStmt.Body, env)
 
 		if result != nil {
-			if result.Type() == object.ERROR_OBJ || result.Type() == object.RETURN_VALUE_OBJ {
+			switch result.Type() {
+			case object.ERROR_OBJ, object.RETURN_VALUE_OBJ, object.BREAK_OBJ:
 				return result
 			}
 		}
@@ -518,9 +524,11 @@ func evalForStatement(forStmt *ast.ForStatement, env *object.Environment) object
 			}
 		}
 
-		conditionVal = Eval(forStmt.Condition, env)
-		if isError(conditionVal) {
-			return conditionVal
+		if forStmt.Condition != nil {
+			conditionVal = Eval(forStmt.Condition, env)
+			if isError(conditionVal) {
+				return conditionVal
+			}
 		}
 	}
 
