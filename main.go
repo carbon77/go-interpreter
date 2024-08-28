@@ -48,6 +48,9 @@ func EvalFile(filename string, out io.Writer) {
 	program := p.ParseProgram()
 	env := object.NewEnvironment()
 
-	evaluator.Eval(program, env)
+	evaluated := evaluator.Eval(program, env)
+	if err, ok := evaluated.(*object.Error); ok {
+		fmt.Println(err.Inspect())
+	}
 
 }
