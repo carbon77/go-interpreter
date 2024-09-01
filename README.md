@@ -44,7 +44,7 @@ print(filtered)  // [ [3, 4], [3, 4, 1, 4] ]
 ```
 
 ### Closures
-```
+```js
 let newAdder = fn(x) {
   return fn(num) {
     return num + x;
