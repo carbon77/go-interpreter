@@ -80,7 +80,7 @@ func EvalFileWithCompiler(filename string, out io.Writer) {
 	program := p.ParseProgram()
 
 	c := compiler.New()
-	c.Compile(program)
+	err = c.Compile(program)
 	if err != nil {
 		fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
 		return
@@ -92,7 +92,7 @@ func EvalFileWithCompiler(filename string, out io.Writer) {
 		fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
 		return
 	}
-	stackTop := machine.StackTop()
+	stackTop := machine.LastPoppedStackElem()
 	io.WriteString(out, stackTop.Inspect())
 	io.WriteString(out, "\n")
 }
